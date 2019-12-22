@@ -1,4 +1,5 @@
 from base64 import b64encode
+from base64 import b64decode
 import hashlib
 import json
 from Crypto.Cipher import AES
@@ -20,19 +21,19 @@ class Encryptor:
 
     def encrypt_aes(self, stringToEncrypt):
         cipher = AES.new(self.key, AES.MODE_CBC)
-        ct_bytes = cipher.encrypt(pad(stringToEncrypt, AES.block_size))
+        ct_bytes = cipher.encrypt(pad(stringToEncrypt.encode(), AES.block_size))
         iv = b64encode(cipher.iv).decode('utf-8')
-        ct = b64encode(ct_bytes).decode('itf-8')
+        ct = b64encode(ct_bytes).decode('utf-8')
         result = json.dumps({'iv':iv, 'text':ct})
         return result
 
     def decrypt_aes(self, stringToDecrypt):
         b64 = json.loads(stringToDecrypt)
-        iv = b64encode(b64['iv'])
-        ct = b64encode(b64['text'])
+        iv = b64decode(b64['iv'])
+        ct = b64decode(b64['text'])
         cipher = AES.new(self.key, AES.MODE_CBC, iv)
         pt = unpad(cipher.decrypt(ct), AES.block_size)
-        return pt
+        return pt.decode()
 
 
     def __pad (self, s):
